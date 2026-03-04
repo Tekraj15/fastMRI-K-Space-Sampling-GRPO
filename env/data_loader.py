@@ -3,12 +3,6 @@ Data Loader for fastMRI Breast DCE Dataset
 
 FastMRIBreastDataLoader: Loads .h5 files, handles multi-coil data
 FastMRISliceDataset: PyTorch Dataset that yields single-coil-combined k-space slices ready for the RL environment
-
-Key features over the original:
-- Root-Sum-of-Squares (RSS) coil combination
-- Proper normalization
-- PyTorch Dataset interface for DataLoader integration
-- Train/val/test splitting by volume
 """
 
 import os
@@ -115,9 +109,7 @@ class FastMRIBreastDataLoader:
     def combine_to_single_coil_kspace(kspace_multicoil: np.ndarray) -> np.ndarray:
         """
         Combine multi-coil k-space into single-coil-equivalent k-space.
-        
-        Process: multi-coil → RSS image → FFT → single-coil k-space.
-        This is what we feed to the RL environment.
+        Process: multi-coil -> RSS image -> FFT -> single-coil k-space that we feed to the RL environment.
         
         Args:
             kspace_multicoil: Complex array of shape (coils, H, W).
@@ -257,12 +249,6 @@ def create_kspace_dataloader(data_path: str,
                               num_workers: int = 0,
                               target_shape: Optional[Tuple[int, int]] = None,
                               **kwargs) -> DataLoader:
-    """
-    Create a DataLoader for k-space slices.
-    
-    Note: batch_size is typically 1 for RL (one slice per env reset),
-    but can be >1 for supervised U-Net pre-training.
-    """
     dataset = FastMRISliceDataset(
         data_path=data_path,
         split=split,
